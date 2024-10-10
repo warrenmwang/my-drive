@@ -3,104 +3,101 @@ import {
   authenticateToken,
   MaybeAuthenticatedRequest,
 } from "../middleware/auth";
-import { JWTPayload, JWTPayloadSchema, UserSchema } from "../schema";
-import { v4 as uuidv4 } from "uuid";
-import { User } from "../schema";
-import { createUserJWT } from "../utils";
-import { CLIENT_ORIGIN, NODE_ENV } from "../config";
-
-export const users: User[] = [];
+import { JWTPayloadSchema, UserSchema } from "../schema";
+import { consoleLogError, createAndSetUserJWT, removeUserJWT } from "../utils";
+import { UserModelDB } from "../models/User";
 
 const userRouter: Router = express.Router();
 
+// NO AUTH
 // Creates a user given email and password.
-userRouter.route("/").post((req: Request, res: Response) => {
+userRouter.route("/").post(async (req: Request, res: Response) => {
   try {
-    const data = UserSchema.omit({ id: true }).parse(req.body);
-    const email = data.email;
-    const password = data.password;
-    // if (email === "") {
-    //   res.status(400).json({ message: "empty email" });
-    //   return;
-    // }
-    // if (password === "") {
-    //   res.status(400).json({ message: "empty password" });
-    //   return;
-    // }
+    // Parse user data for new account
+    const data = UserSchema.omit({ id: true }).parse(req.body); // omit ID because don't let client generate id.
 
-    // Ensure no account with same email already exists
-    if (users.findIndex((user) => user.email === email) !== -1) {
+    // Query to ensure no account with same email already exists
+    const queryRes = await UserModelDB.find({ email: data.email }).exec();
+    if (queryRes.length !== 0) {
       return res
         .status(400)
         .json({ message: "An account with the entered email exists already." });
     }
 
-    // save in db, for now just save in global list
-    const id: string = uuidv4();
-
-    // TODO: currently using in memory array, in future use DB
-    users.push({ id, email, password } as User);
-
-    // After creating user account we will auth them:
-    const { token, expirationTimeSeconds } = createUserJWT(id);
-    const maxAge = 1000 * expirationTimeSeconds;
-
-    // Set JWT in cookie
-    res.cookie("auth_token_DIT", token, {
-      httpOnly: true,
-      secure: NODE_ENV === "production",
-      maxAge: maxAge, // field unit is milliseconds
-      path: "/",
-      // sameSite: "none",
-      // domain: CLIENT_ORIGIN,
+    // Create new user with details and save to db
+    const userID: string = crypto.randomUUID();
+    const newUser = new UserModelDB({
+      id: userID,
+      email: data.email,
+      password: data.password,
     });
+    await newUser.save();
 
-    return res.status(201).json({ message: "Account created." });
+    // Set JWT in cookie and return ok
+    return createAndSetUserJWT(userID, res)
+      .status(201)
+      .json({ message: "Account created." });
   } catch (err) {
-    console.log(err);
-    return res.status(500).json(err);
+    consoleLogError(err);
+    return res.status(500).json({ message: JSON.stringify(err) });
   }
 });
 
-// Retrieves a user after authenticated.
+// AUTHED
+// Retrieves a user
 userRouter.get(
   "/",
   authenticateToken,
-  (req: MaybeAuthenticatedRequest, res: Response) => {
+  async (req: MaybeAuthenticatedRequest, res: Response) => {
     try {
       const authPayload = JWTPayloadSchema.parse(req.user);
-      // TODO: currently using in memory array, in future use DB
-      const foundUser = users.find((user) => user.id === authPayload.userID);
-      if (foundUser === undefined) {
+      const queryRes = await UserModelDB.find({
+        id: authPayload.userID,
+      }).exec();
+
+      if (queryRes.length === 0) {
         return res.status(500).json({ error: "That user does not exist." });
       }
-      const userDetails = UserSchema.parse(foundUser);
+
+      if (queryRes.length > 1) {
+        throw new Error("unexpected number of users matching that user ID");
+      }
+
+      const foundUser = queryRes[0];
+      const userDetails = UserSchema.parse({
+        id: foundUser.id,
+        email: foundUser.email,
+        password: foundUser.password,
+      });
       return res.status(200).json(userDetails);
     } catch (err) {
+      consoleLogError(err);
       return res.status(500).json(err);
     }
-  }
+  },
 );
 
-// Delete a user given their email and password.
+// AUTHED
+// Delete a user.
 userRouter.delete(
   "/",
   authenticateToken,
-  (req: MaybeAuthenticatedRequest, res: Response) => {
+  async (req: MaybeAuthenticatedRequest, res: Response) => {
     try {
       const authPayload = JWTPayloadSchema.parse(req.user);
-      // TODO: current users is just an in memory array, in future use DB
-      const foundUserIndex = users.findIndex(
-        (user) => user.id === authPayload.userID
-      );
-      if (foundUserIndex === undefined) {
-        return res.status(500).json({ error: "That user does not exist." });
-      }
-      users.splice(foundUserIndex, 1);
+
+      // Delete their details from DB
+      await UserModelDB.deleteOne({ id: authPayload.userID });
+
+      // Revoke their token
+      return removeUserJWT(res)
+        .status(200)
+        .json({ message: "Account deleted successfully." });
     } catch (err) {
+      consoleLogError(err);
       return res.status(500).json(err);
     }
-  }
+  },
 );
 
 export default userRouter;

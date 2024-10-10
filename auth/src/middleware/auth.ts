@@ -14,14 +14,15 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ) => {
+  // Check existence of token in cookie
   const token = req.cookies.auth_token_DIT;
-
   if (!token) {
     return res
       .status(401)
       .json({ message: "Access denied. No token provided." });
   }
 
+  // Validate the JWT with server-kept secret
   try {
     req.user = JWTPayloadSchema.parse(jwt.verify(token, JWT_SECRET));
     next();

@@ -10,10 +10,16 @@ export const JWT_EXPIRATION_HOURS = z.coerce
   .parse(process.env.JWT_EXPIRATION_HOURS);
 export const NODE_ENV = z.string().min(1).parse(process.env.NODE_ENV);
 
-if (NODE_ENV === "development") {
-  console.log(`[AUTH]: PORT = ${PORT}`);
-  console.log(`[AUTH]: CLIENT_ORIGIN = ${CLIENT_ORIGIN}`);
-  console.log(`[AUTH]: JWT_SECRET = ${JWT_SECRET}`);
-  console.log(`[AUTH]: JWT_EXPIRATION_HOURS = ${JWT_EXPIRATION_HOURS}`);
-  console.log(`[AUTH]: NODE_ENV = ${NODE_ENV}`);
-}
+export const MONGO_ORIGIN = z.string().min(1).parse(process.env.MONGO_ORIGIN);
+export const MONGO_INITDB_ROOT_USERNAME = z
+  .string()
+  .min(1)
+  .parse(process.env.MONGO_INITDB_ROOT_USERNAME);
+export const MONGO_INITDB_ROOT_PASSWORD = z
+  .string()
+  .min(1)
+  .parse(process.env.MONGO_INITDB_ROOT_PASSWORD);
+export const MONGO_INITDB_DATABASE = z
+  .string()
+  .min(1)
+  .parse(process.env.MONGO_INITDB_DATABASE);

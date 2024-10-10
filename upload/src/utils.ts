@@ -1,3 +1,4 @@
+import { ZodError } from "zod";
 import { Chunk } from "./schema";
 import fs from "node:fs";
 
@@ -30,4 +31,8 @@ export function concatChunksOrderly(chunks: Chunk[]): Buffer {
 
 export function writeToFile(file: Buffer, path: string): void {
   fs.writeFileSync(path, file);
+}
+
+export function consoleLogError(err: Error | ZodError) {
+  console.log(`[UPLOAD]: Error - ${err.message}`);
 }
