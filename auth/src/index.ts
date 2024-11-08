@@ -7,6 +7,8 @@ import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import {
   CLIENT_ORIGIN,
+  MONGO_INITDB_DATABASE,
+  MONGO_INITDB_ROOT_PASSWORD,
   MONGO_INITDB_ROOT_USERNAME,
   MONGO_ORIGIN,
   NODE_ENV,
@@ -16,9 +18,11 @@ import {
 main().catch((err) => console.log(`[AUTH]: Error - ${err}`));
 
 async function main() {
+  // TODO: connect to particular db for the user information without crashing
+  
   // connect to Mongodb for user data
   await mongoose.connect(
-    `mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_USERNAME}@${MONGO_ORIGIN}`,
+    `mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_ORIGIN}`,
   );
 
   // start restful api for login/create users

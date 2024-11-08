@@ -12,10 +12,7 @@ export const apiCreateUser = async function (loginInfo: BasicLoginInfo) {
       withCredentials: true,
     })
     .then((res) => res.data)
-    .then((data) => {
-      console.log(data);
-    });
-  // .then((data) => z.object({ message: z.string() }).parse(data));
+    .then((data) => z.object({ message: z.string() }).parse(data));
 };
 
 export const apiDeleteUser = async function () {
@@ -36,7 +33,7 @@ export const apiLoginUser = async function (loginInfo: BasicLoginInfo) {
     .then((data) => z.object({ message: z.string() }).parse(data));
 };
 
-export const apiLogoutUser = async function (email: string, password: string) {
+export const apiLogoutUser = async function () {
   return axios.get(`${AUTH_URL}/logout`, {
     withCredentials: true,
   });

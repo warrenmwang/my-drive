@@ -1,7 +1,14 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useGetIsAuthed } from "../../hooks/auth";
 
 const NavBar: React.FC = function () {
+  let isAuthed = false;
+  const authed = useGetIsAuthed();
+  if (authed.isSuccess) {
+    isAuthed = true;
+  }
+
   return (
     <nav className="flex gap-3 bg-slate-200 p-2">
       <NavLink className="p-3 bg-slate-300 rounded-md" to="/">
@@ -13,7 +20,13 @@ const NavBar: React.FC = function () {
       <NavLink className="p-3 bg-slate-300 rounded-md" to="/form">
         Form
       </NavLink>
+      {isAuthed && (
+        <NavLink className="p-3 bg-slate-300 rounded-md" to="/drive">
+          Drive
+        </NavLink>
+      )}
     </nav>
   );
 };
+
 export default NavBar;
