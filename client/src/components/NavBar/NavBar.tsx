@@ -6,7 +6,7 @@ const NavBar: React.FC = function () {
   let isAuthed = false;
   const authed = useGetIsAuthed();
   if (authed.isSuccess) {
-    isAuthed = true;
+    isAuthed = authed.data;
   }
 
   return (
@@ -14,9 +14,16 @@ const NavBar: React.FC = function () {
       <NavLink className="p-3 bg-slate-300 rounded-md" to="/">
         Home
       </NavLink>
-      <NavLink className="p-3 bg-slate-300 rounded-md" to="/login">
-        Login
-      </NavLink>
+      {!isAuthed && (
+        <NavLink className="p-3 bg-slate-300 rounded-md" to="/login">
+          Login
+        </NavLink>
+      )}
+      {isAuthed && (
+        <NavLink className="p-3 bg-slate-300 rounded-md" to="/account">
+          Account
+        </NavLink>
+      )}
       <NavLink className="p-3 bg-slate-300 rounded-md" to="/form">
         Form
       </NavLink>

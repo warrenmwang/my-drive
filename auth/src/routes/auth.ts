@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import {
   MaybeAuthenticatedRequest,
   authenticateToken,
+  softAuthenticateToken,
 } from "../middleware/auth";
 import { consoleLogError, createAndSetUserJWT, removeUserJWT } from "../utils";
 import { UserModelDB } from "../models/User";
@@ -50,10 +51,10 @@ authRouter.post("/login", async (req: Request, res: Response) => {
 // Returns ok if user is authenticated
 authRouter.get(
   "/status",
-  authenticateToken,
+  softAuthenticateToken,
   (req: MaybeAuthenticatedRequest, res: Response) => {
     if (req?.user === undefined) {
-      res.status(400).json(false);
+      res.status(200).json(false);
     } else {
       res.status(200).json(true);
     }

@@ -1,27 +1,26 @@
-import { useMutation } from "@tanstack/react-query";
-import React from "react";
-import { BasicLoginInfo } from "../schema";
-import { apiCreateUser, apiLoginUser } from "../api/auth-user";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import { z } from "zod";
+import {
+  useGetIsAuthed,
+  useMutateCreateAcc,
+  useMutateLogin,
+} from "../hooks/auth";
 import "../shared-styles/button.css";
 
 const LoginPage: React.FC = function () {
   const navigate = useNavigate();
-  const [requestInProgress, setRequestInProgress] = React.useState(false);
-  const [isLoginForm, setIsLoginForm] = React.useState(true);
+  const [requestInProgress, setRequestInProgress] = useState(false);
+  const [isLoginForm, setIsLoginForm] = useState(true);
 
-  const [email, setEmail] = React.useState<string>("");
-  const [password, setPassword] = React.useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
 
-  const loginAccountMutation = useMutation({
-    mutationFn: (loginInfo: BasicLoginInfo) => apiLoginUser(loginInfo),
-  });
+  const authQuery = useGetIsAuthed();
 
-  const createAccountMutation = useMutation({
-    mutationFn: (loginInfo: BasicLoginInfo) => apiCreateUser(loginInfo),
-  });
+  const loginAccountMutation = useMutateLogin();
+  const createAccountMutation = useMutateCreateAcc();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,6 +71,16 @@ const LoginPage: React.FC = function () {
       },
     );
   };
+
+  useEffect(() => {
+    if (authQuery.status === "success" && authQuery.data) {
+      navigate("/account");
+    }
+  }, [authQuery.status]);
+
+  if (authQuery.isFetching) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <div className="w-full md:w-4/5 lg:w:2/3 xl:1/2 flex flex-col items-center">

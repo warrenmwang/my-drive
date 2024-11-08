@@ -48,5 +48,5 @@ export const isAuthed = async function () {
       },
     })
     .then((res) => res.data)
-    .then((data) => z.boolean(data));
+    .then((data) => z.coerce.boolean().parse(data));
 };

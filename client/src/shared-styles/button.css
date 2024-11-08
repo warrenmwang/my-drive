@@ -9,3 +9,7 @@
 .button__gray {
   @apply bg-slate-400 hover:bg-slate-500 text-white p-3 m-3 rounded w-fit;
 }
+
+.button__red {
+  @apply bg-red-500 hover:bg-red-600 text-white p-3 m-3 rounded w-fit;
+}
