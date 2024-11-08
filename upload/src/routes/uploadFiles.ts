@@ -11,7 +11,7 @@ import {
 } from "../schema";
 import { concatChunksOrderly, writeToFile } from "../utils";
 import { z } from "zod";
-import { chunks, fileUploadProgress, sessions } from "..";
+import { chunks, fileUploadProgress, sessions } from "../config";
 
 const router = express.Router();
 const multiPartRouter = express.Router();

@@ -7,8 +7,9 @@ import {
   SessionMetaDataSchema,
   UploadStatus,
 } from "../schema";
-import { fileUploadProgress, sessions } from "..";
+
 import { z } from "zod";
+import { fileUploadProgress, sessions } from "../config";
 
 const router = express.Router();
 

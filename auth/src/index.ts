@@ -18,12 +18,11 @@ import {
 main().catch((err) => console.log(`[AUTH]: Error - ${err}`));
 
 async function main() {
-  // TODO: connect to particular db for the user information without crashing
-  
-  // connect to Mongodb for user data
-  await mongoose.connect(
-    `mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_ORIGIN}`,
-  );
+  await mongoose.connect(`mongodb://${MONGO_ORIGIN}/${MONGO_INITDB_DATABASE}`, {
+    user: MONGO_INITDB_ROOT_USERNAME,
+    pass: MONGO_INITDB_ROOT_PASSWORD,
+    authSource: "admin",
+  });
 
   // start restful api for login/create users
   const app = express();
