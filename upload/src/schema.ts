@@ -64,3 +64,11 @@ export const JWTPayloadSchema = z.object({
 });
 
 export type JWTPayload = z.infer<typeof JWTPayloadSchema>;
+
+export const FileRetrieveQueryParamsSchema = z.object({
+  orderBy: z.enum(["uploadDate", "name"]).optional(),
+  limit: z.number().optional(),
+});
+export type FileRetrieveQueryParams = z.infer<
+  typeof FileRetrieveQueryParamsSchema
+>;

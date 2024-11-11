@@ -1,6 +1,11 @@
-# Document Import Tool (DIT)
+# MyDrive
 
-Implementation of a Full-featured web app for authenticated forms and bulk document upload with validation and storage in a potentially distributed MongoDB.
+I'm going to call this application "MyDrive" pretending it is a super primitive version of Google Drive / DropBox where you can make an account, upload your personal documents, and then retrieve them later.
+
+Features
+- create an account with basic email and password, login, authenticated routes
+- bulk document upload form with validation
+- documents are stored in a MongoDB instance.
 
 ## Tech Stack
 

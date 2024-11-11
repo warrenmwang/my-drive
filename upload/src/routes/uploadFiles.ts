@@ -9,9 +9,11 @@ import {
   FileUploadProgressSchema,
   UploadStatus,
 } from "../schema";
-import { concatChunksOrderly, writeToFile } from "../utils";
+import { concatChunksOrderly } from "../utils";
 import { z } from "zod";
 import { chunks, fileUploadProgress, sessions } from "../config";
+import File from "../mongodb/models/File";
+import { AuthLocals } from "../middleware/auth";
 
 const router = express.Router();
 const multiPartRouter = express.Router();
@@ -23,19 +25,28 @@ router.use(
 router.post(
   "/single",
   (
-    req: Request<unknown, FileMetaData, Buffer, FileMetaData>,
-    res: Response,
+    req: Request<any, FileMetaData, Buffer, FileMetaData>,
+    res: Response<any, AuthLocals>,
   ) => {
     try {
-      const searchParams = FileMetaDataSchema.parse(req.query);
-      const { fileName } = searchParams; // filename contains extension as well
+      const fileMetaData = FileMetaDataSchema.parse(req.query);
       const fileBuffer = req.body;
+      const userID = res.locals.user;
 
-      // save to disk
-      writeToFile(fileBuffer, `./uploads/${fileName}`);
+      const fileToSave = new File({
+        userID: userID,
+        fileID: fileMetaData.fileID,
+        fileName: fileMetaData.fileName,
+        fileSize: fileMetaData.fileSize,
+        fileMIMEType: fileMetaData.fileMIMEType,
+        fileExtension: fileMetaData.fileExtension,
+        fileLastModified: fileMetaData.fileLastModified,
+        content: fileBuffer,
+      });
+      fileToSave.save();
 
       // send back the metadata
-      res.status(200).send(searchParams);
+      res.status(200).send(fileMetaData);
     } catch (e) {
       if (e instanceof z.ZodError) {
         res.status(400).json({ error: e.errors });
@@ -48,8 +59,12 @@ router.post(
 
 multiPartRouter.post(
   "/chunk",
-  (req: Request<unknown, unknown, Buffer, ChunkMetaData>, res: Response) => {
+  (
+    req: Request<unknown, unknown, Buffer, ChunkMetaData>,
+    res: Response<any, AuthLocals>,
+  ) => {
     try {
+      const userID = res.locals.user;
       const searchParams = ChunkMetaDataSchema.parse(req.query);
       const {
         sessionID,
@@ -59,7 +74,6 @@ multiPartRouter.post(
         uploadedBytes,
         totalChunks,
       } = searchParams;
-
       const chunkData = req.body;
 
       const chunkMetaData: ChunkMetaData = {
@@ -98,24 +112,25 @@ multiPartRouter.post(
 
       // Check if file is completed
       if (chunks.get(fileID)?.length === chunk.totalChunks) {
-        // Construct file from chunks
-        const file = concatChunksOrderly(chunks.get(fileID) as Chunk[]);
-
-        // Get file meta data
+        const fileBuffer = concatChunksOrderly(chunks.get(fileID) as Chunk[]);
         const fileMetaData = FileMetaDataSchema.parse(
           sessions.get(sessionID)?.get(fileID),
         );
 
-        // Save file to disk
-        writeToFile(
-          file,
-          `./uploads/${fileMetaData.fileName}.${fileMetaData.fileExtension}`,
-        );
+        const fileToSave = new File({
+          userID: userID,
+          fileID: fileMetaData.fileID,
+          fileName: fileMetaData.fileName,
+          fileSize: fileMetaData.fileSize,
+          fileMIMEType: fileMetaData.fileMIMEType,
+          fileExtension: fileMetaData.fileExtension,
+          fileLastModified: fileMetaData.fileLastModified,
+          content: fileBuffer,
+        });
+        fileToSave.save();
 
-        // Clear chunks for this file
         chunks.delete(fileID);
 
-        // Update file upload progress for this file
         const currFileUploadProgress = FileUploadProgressSchema.parse(
           fileUploadProgress.get(fileID),
         );

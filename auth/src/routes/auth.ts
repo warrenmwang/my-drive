@@ -2,8 +2,8 @@ import express, { Router, Request, Response } from "express";
 import { UserSchema } from "../schema";
 import dotenv from "dotenv";
 import {
-  MaybeAuthenticatedRequest,
   authenticateToken,
+  AuthLocals,
   softAuthenticateToken,
 } from "../middleware/auth";
 import { consoleLogError, createAndSetUserJWT, removeUserJWT } from "../utils";
@@ -52,26 +52,18 @@ authRouter.post("/login", async (req: Request, res: Response) => {
 authRouter.get(
   "/status",
   softAuthenticateToken,
-  (req: MaybeAuthenticatedRequest, res: Response) => {
-    if (req?.user === undefined) {
-      res.status(200).json(false);
-    } else {
-      res.status(200).json(true);
-    }
+  (_, res: Response<any, AuthLocals>) => {
+    return res.status(200).json(true);
   },
 );
 
 // AUTHED
 // Log out a user by overwritting their JWT access token.
-authRouter.get(
-  "/logout",
-  authenticateToken,
-  (_: MaybeAuthenticatedRequest, res: Response) => {
-    return removeUserJWT(res)
-      .status(200)
-      .json({ message: "Logged out successfully." });
-  },
-);
+authRouter.get("/logout", authenticateToken, (_, res: Response) => {
+  return removeUserJWT(res)
+    .status(200)
+    .json({ message: "Logged out successfully." });
+});
 
 // // TODO: refresh the user's access token
 // authRouter.get(

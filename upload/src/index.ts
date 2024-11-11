@@ -15,6 +15,7 @@ import {
   PORT,
 } from "./config";
 import mongoose from "mongoose";
+import fileRetrieveRouter from "./routes/retrieveFiles";
 
 async function main() {
   await mongoose.connect(`mongodb://${MONGO_ORIGIN}/${MONGO_INITDB_DATABASE}`, {
@@ -42,6 +43,7 @@ async function main() {
 
   app.use("/session", sessionRouter);
   app.use("/upload", fileUploadRouter);
+  app.use("/retrieve", fileRetrieveRouter);
 
   app.listen(PORT, () => {
     console.log(`[UPLOAD]: Server is running at http://localhost:${PORT}`);
