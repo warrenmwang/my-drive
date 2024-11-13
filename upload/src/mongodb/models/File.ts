@@ -24,6 +24,6 @@ const FileSchema = new mongoose.Schema<File_T>({
   createdAt: { type: Date, default: Date.now },
 });
 
-const DocumentModel = mongoose.model<File_T>("File", FileSchema);
+const FileModel = mongoose.model<File_T>("File", FileSchema);
 
-export default DocumentModel;
+export default FileModel;

@@ -1,31 +1,22 @@
 # MyDrive
 
-I'm going to call this application "MyDrive" pretending it is a super primitive version of Google Drive / DropBox where you can make an account, upload your personal documents, and then retrieve them later.
+A top down copy of Google Drive's core feature -- personal file upload and retrieval.
 
 Features
 - create an account with basic email and password, login, authenticated routes
 - bulk document upload form with validation
 - documents are stored in a MongoDB instance.
 
-## Tech Stack
+## Tech Stack and Arch
 
-- Full stack Typescript
-- Frontend: ReactJS, Redux, React Query, Tailwind CSS
-- Testing:
-  - Unit Testing: Jest, React Testing Library (but we are using vite lmao)
-  - E2E Testing: Cypress
+- Language: TypeScript
+- Frontend: ReactJS, Redux, React Query, Tailwind CSS (pretty standard)
+    - Testing:
+      - Unit Testing: Jest+React Testing Library (todo)
+      - E2E Testing: Playwright (todo)
 - Backend: ExpressJS, MongoDB
-- Auth: JWT authentication with simple username email and password
-
-TODO:
-
-- secure login using short lived JWT token
-- server issues a refresh token if about to expire and user still logged in
-
-## Microservices Architecture
-
-An attempt at creating a microservices architecture for the backend, by essentially creating multiple API services that do different tasks each
-with a well defined API endpoints.
+- Auth: JWT + simple username email and password
+- Arch: Microservices. Instead of a spaghetti mess of services calling each other with some internal API, isn't better and a wonderful idea to then expand that spaghetti and introduce network requests into the fray...? 
 
 ### Client Static content server, service
 
@@ -68,3 +59,10 @@ Default PORT: 4030
 Trying to understand how to send a large file across the wire
 using fullstack TS and how to keep track of stuff while chunking up larger document
 uploads.
+
+## TODO:
+
+- [ ] Client retrieve small files instantly.
+- [ ] Client retrieve large files in chunks.
+- [ ] Be able to cresume uploads if a large in progress upload dropped
+- [ ] Update OAuth secuirty: make long lived JWT token refresh token and to be used to request for short lived access tokens

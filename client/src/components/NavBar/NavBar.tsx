@@ -26,12 +26,6 @@ const NavBar: React.FC = function () {
           <NavLink className="p-3 bg-slate-300 rounded-md" to="/account">
             Account
           </NavLink>
-          <NavLink className="p-3 bg-slate-300 rounded-md" to="/form">
-            Form
-          </NavLink>
-          <NavLink className="p-3 bg-slate-300 rounded-md" to="/drive">
-            Drive
-          </NavLink>
         </>
       )}
     </nav>

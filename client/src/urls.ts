@@ -1,12 +1,14 @@
-export const SESSION_START_URL = "http://localhost:4020/session/start";
-export const SESSION_END_URL = "http://localhost:4020/session/end";
-export const UPLOAD_SINGLE_URL = "http://localhost:4020/upload/single";
-export const UPLOAD_MULTIPART_INIT_URL =
-  "http://localhost:4020/upload/multipart/init";
-export const UPLOAD_MULTIPART_CHUNK_URL =
-  "http://localhost:4020/upload/multipart/chunk";
+import { FILE_ORIGIN, USER_AUTH_ORIGIN } from "./config";
 
-export const AUTH_URL = "http://localhost:4000/auth/v1";
-export const USER_ACCOUNT_URL = "http://localhost:4000/user/v1";
+export const SESSION_START_URL = `${FILE_ORIGIN}/session/start`;
+export const SESSION_END_URL = `${FILE_ORIGIN}/session/end`;
+export const UPLOAD_SINGLE_URL = `${FILE_ORIGIN}/upload/single`;
+export const UPLOAD_MULTIPART_INIT_URL = `${FILE_ORIGIN}/upload/multipart/init`;
+export const UPLOAD_MULTIPART_CHUNK_URL = `${FILE_ORIGIN}/upload/multipart/chunk`;
+
+export const RETRIEVE_FILE_METADATA_LIST = `${FILE_ORIGIN}/retrieve/list`; // TODO:
+
+export const AUTH_URL = `${USER_AUTH_ORIGIN}/auth/v1`;
+export const USER_ACCOUNT_URL = `${USER_AUTH_ORIGIN}/user/v1`;
 
 // TODO: more urls for the other services

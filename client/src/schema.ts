@@ -40,3 +40,15 @@ export const BasicLoginInfoSchema = z.object({
   password: z.string().min(8),
 });
 export type BasicLoginInfo = z.infer<typeof BasicLoginInfoSchema>;
+
+export const FileMetaDataReceivedSchema = z.object({
+  userID: z.string(),
+  fileID: z.string(),
+  fileName: z.string(),
+  fileSize: z.number(),
+  fileMIMEType: z.string(),
+  fileExtension: z.string(),
+  fileLastModified: z.number(),
+  createdAt: z.string(),
+});
+export type FileMetaDataReceived = z.infer<typeof FileMetaDataReceivedSchema>;

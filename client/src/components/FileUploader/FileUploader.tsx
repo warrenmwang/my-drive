@@ -1,8 +1,8 @@
-import * as React from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { v4 as uuid } from "uuid";
 import { ChunkMetaData, FileMetaData } from "../../schema";
 import { z } from "zod";
-import { CHUNK_SIZE, MAX_CONCURRENT_REQUESTS } from "../../constants";
+import { CHUNK_SIZE_BYTES, MAX_CONCURRENT_REQUESTS } from "../../constants";
 import { ConcurrencyManager } from "../../concurrency";
 import "../../shared-styles/button.css";
 import {
@@ -11,15 +11,17 @@ import {
   apiUploadSingleFile,
   apiUploadFileChunk,
 } from "../../api/session-upload";
+import { useQueryClient } from "@tanstack/react-query";
 
 const FileUploader: React.FC = () => {
-  const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
-  const [inputFiles, setInputFiles] = React.useState<File[]>([]);
-  const [uploadProgress, setUploadProgress] = React.useState<{
+  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [inputFiles, setInputFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{
     [key: string]: number;
   }>({});
-  const [error, setError] = React.useState<string | null>(null);
-  const concurrencyManager = React.useMemo(
+  const [error, setError] = useState<string | null>(null);
+  const concurrencyManager = useMemo(
     () => new ConcurrencyManager(MAX_CONCURRENT_REQUESTS),
     [],
   );
@@ -27,12 +29,11 @@ const FileUploader: React.FC = () => {
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // setInputFiles([...inputFiles, ...Array.from(files)]);
       setInputFiles(Array.from(files));
     }
   };
 
-  const uploadFileFull = React.useCallback(
+  const uploadFileFull = useCallback(
     async (f: File, fileMetaData: FileMetaData) => {
       return concurrencyManager.runTask(async () =>
         apiUploadSingleFile(f, fileMetaData),
@@ -41,7 +42,7 @@ const FileUploader: React.FC = () => {
     [concurrencyManager],
   );
 
-  const uploadChunk = React.useCallback(
+  const uploadChunk = useCallback(
     async (chunkMetaData: ChunkMetaData, data: Blob) => {
       return concurrencyManager.runTask(async () =>
         apiUploadFileChunk(data, chunkMetaData),
@@ -50,14 +51,14 @@ const FileUploader: React.FC = () => {
     [concurrencyManager],
   );
 
-  const chunkUploadFile = React.useCallback(
+  const chunkUploadFile = useCallback(
     async (
       f: File,
       fileMetaData: FileMetaData,
       onProgress: (progress: number) => void,
     ) => {
-      const numFullChunks = Math.floor(f.size / CHUNK_SIZE);
-      const partialChunkSize = f.size % CHUNK_SIZE;
+      const numFullChunks = Math.floor(f.size / CHUNK_SIZE_BYTES);
+      const partialChunkSize = f.size % CHUNK_SIZE_BYTES;
       const totalNumChunks = numFullChunks + (partialChunkSize > 0 ? 1 : 0);
 
       let from;
@@ -65,13 +66,13 @@ const FileUploader: React.FC = () => {
 
       for (let i = 0; i < numFullChunks; i++) {
         from = to;
-        to = to + CHUNK_SIZE;
+        to = to + CHUNK_SIZE_BYTES;
         const chunkMetaData: ChunkMetaData = {
           sessionID: fileMetaData.sessionID,
           fileID: fileMetaData.fileID,
           chunkIndex: i,
-          chunkSize: CHUNK_SIZE,
-          uploadedBytes: CHUNK_SIZE * i,
+          chunkSize: CHUNK_SIZE_BYTES,
+          uploadedBytes: CHUNK_SIZE_BYTES * i,
           totalChunks: totalNumChunks,
         };
 
@@ -88,7 +89,7 @@ const FileUploader: React.FC = () => {
           fileID: fileMetaData.fileID,
           chunkIndex: numFullChunks,
           chunkSize: to - from,
-          uploadedBytes: CHUNK_SIZE * numFullChunks,
+          uploadedBytes: CHUNK_SIZE_BYTES * numFullChunks,
           totalChunks: totalNumChunks,
         };
 
@@ -99,12 +100,13 @@ const FileUploader: React.FC = () => {
     [uploadChunk],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isSubmitting) {
       const uploadFiles = async () => {
         try {
           if (inputFiles.length === 0) {
-            throw new Error("Input files is empty.");
+            setIsSubmitting(false);
+            return;
           }
 
           // start upload session
@@ -116,7 +118,7 @@ const FileUploader: React.FC = () => {
 
           const requests = inputFiles.map(async (f: File, i: number) => {
             const fileMetaData = sessionMetaData.files[i];
-            if (f.size > CHUNK_SIZE) {
+            if (f.size > CHUNK_SIZE_BYTES) {
               await chunkUploadFile(f, fileMetaData, (progress) => {
                 setUploadProgress((prev) => ({ ...prev, [f.name]: progress }));
               });
@@ -139,6 +141,9 @@ const FileUploader: React.FC = () => {
             console.error("An unknown error occurred.");
           }
         } finally {
+          queryClient.invalidateQueries({
+            queryKey: ["drive"],
+          });
           setIsSubmitting(false);
         }
       };
@@ -147,31 +152,34 @@ const FileUploader: React.FC = () => {
   }, [isSubmitting, inputFiles, chunkUploadFile, uploadFileFull]);
 
   return (
-    <div className="mx-auto">
-      <form>
-        <input type="file" multiple onChange={handleOnChange} />
-        <button
-          type="button"
-          onClick={() => setIsSubmitting(true)}
-          className="button__green"
-        >
-          {isSubmitting ? "Submitting" : "Submit"}
-        </button>
-        <button
-          type="reset"
-          onClick={() => setInputFiles([])}
-          className="button__gray"
-        >
-          Clear
-        </button>
-      </form>
-      <h1>File Upload Progress:</h1>
-      {inputFiles.map((file) => (
-        <div key={file.name}>
-          {file.name}: {uploadProgress[file.name] || 0}%
-        </div>
-      ))}
-      {error && <div style={{ color: "red" }}>{error}</div>}
+    <div className="w-full bg-slate-200">
+      <div className="flex flex-col items-center">
+        <h1>Mass File Uploader</h1>
+        <form>
+          <input type="file" multiple onChange={handleOnChange} />
+          <button
+            type="button"
+            onClick={() => setIsSubmitting(true)}
+            className="button__green"
+          >
+            {isSubmitting ? "Submitting" : "Submit"}
+          </button>
+          <button
+            type="reset"
+            onClick={() => setInputFiles([])}
+            className="button__gray"
+          >
+            Clear
+          </button>
+        </form>
+        <h1>File Upload Progress:</h1>
+        {inputFiles.map((file) => (
+          <div key={file.name}>
+            {file.name}: {uploadProgress[file.name] || 0}%
+          </div>
+        ))}
+        {error && <div style={{ color: "red" }}>{error}</div>}
+      </div>
     </div>
   );
 };

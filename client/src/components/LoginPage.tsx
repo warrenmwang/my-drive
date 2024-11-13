@@ -9,6 +9,9 @@ import {
 } from "../hooks/auth";
 import "../shared-styles/button.css";
 
+// TODO: ensure that the login functionality works bc i swear when i try to use the same account i created in previous runs
+// it will act as if that account doesn't exist?
+
 const LoginPage: React.FC = function () {
   const navigate = useNavigate();
   const [requestInProgress, setRequestInProgress] = useState(false);
@@ -29,7 +32,7 @@ const LoginPage: React.FC = function () {
       { email, password },
       {
         onSuccess: () => {
-          navigate("/form");
+          navigate("/");
         },
         onError: (error) => {
           if (error instanceof AxiosError) {
@@ -54,7 +57,7 @@ const LoginPage: React.FC = function () {
       { email, password },
       {
         onSuccess: () => {
-          navigate("/form");
+          navigate("/");
         },
         onError: (error) => {
           if (error instanceof AxiosError) {

@@ -1,5 +1,9 @@
 import React, { useEffect } from "react";
-import { useGetIsAuthed, useMutationDeleteAcc, useMutationLogout } from "../hooks/auth";
+import {
+  useGetIsAuthed,
+  useMutationDeleteAcc,
+  useMutationLogout,
+} from "../hooks/auth";
 import { useNavigate } from "react-router-dom";
 
 const AccountPage: React.FC = () => {
@@ -9,11 +13,16 @@ const AccountPage: React.FC = () => {
   const authQuery = useGetIsAuthed();
 
   const handleLogout = () => {
-    logoutMutation.mutate();
+    logoutMutation.mutate(undefined, {
+      onSettled: () => navigate("/"),
+    });
   };
 
   const handleDelete = () => {
-    deleteMutation.mutate();
+    deleteMutation.mutate(undefined, {
+      onSettled: () => navigate("/"),
+    });
+    navigate("/");
   };
 
   useEffect(() => {

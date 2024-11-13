@@ -22,6 +22,16 @@ router.use(
   bodyParser.raw({ type: "application/octet-stream", limit: "100mb" }),
 );
 
+// TODO: allow editting of file name, that's it...
+router.post("/edit", (req, res) => {
+
+})
+
+// TODO: delete a file by its id
+router.delete("/", (req, res) => {
+
+})
+
 router.post(
   "/single",
   (
@@ -31,7 +41,7 @@ router.post(
     try {
       const fileMetaData = FileMetaDataSchema.parse(req.query);
       const fileBuffer = req.body;
-      const userID = res.locals.user;
+      const userID = res.locals.user.userID;
 
       const fileToSave = new File({
         userID: userID,
@@ -64,7 +74,7 @@ multiPartRouter.post(
     res: Response<any, AuthLocals>,
   ) => {
     try {
-      const userID = res.locals.user;
+      const userID = res.locals.user.userID;
       const searchParams = ChunkMetaDataSchema.parse(req.query);
       const {
         sessionID,
