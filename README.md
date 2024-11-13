@@ -1,5 +1,7 @@
 # MyDrive
 
+![](./client/public/favicon.png)
+
 A top down copy of Google Drive's core feature -- personal file upload and retrieval.
 
 Features
