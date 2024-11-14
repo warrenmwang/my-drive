@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { v4 as uuid } from "uuid";
 import { ChunkMetaData, FileMetaData } from "../../schema";
 import { z } from "zod";
 import { CHUNK_SIZE_BYTES, MAX_CONCURRENT_REQUESTS } from "../../constants";
@@ -12,6 +11,7 @@ import {
   apiUploadFileChunk,
 } from "../../api/session-upload";
 import { useQueryClient } from "@tanstack/react-query";
+import { randomUUID } from "crypto";
 
 const FileUploader: React.FC = () => {
   const queryClient = useQueryClient();
@@ -110,7 +110,7 @@ const FileUploader: React.FC = () => {
           }
 
           // start upload session
-          const sessionID = uuid();
+          const sessionID = randomUUID();
           const sessionMetaData = await startUploadSession(
             sessionID,
             inputFiles,

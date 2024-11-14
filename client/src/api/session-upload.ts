@@ -5,7 +5,6 @@ import {
   FileMetaDataSchema,
   SessionMetaDataSchema,
 } from "../schema";
-import { v4 as uuid } from "uuid";
 import axios from "axios";
 import {
   SESSION_START_URL,
@@ -13,17 +12,18 @@ import {
   UPLOAD_SINGLE_URL,
   UPLOAD_MULTIPART_CHUNK_URL,
 } from "../urls";
+import { randomUUID } from "crypto";
 
 export const startUploadSession = async (sessionID: string, files: File[]) => {
   const sessionMetaData = SessionMetaDataSchema.parse({
     id: sessionID,
     files: files.map((f) => ({
       sessionID: sessionID,
-      fileID: uuid(),
+      fileID: randomUUID(),
       fileName: f.name,
       fileSize: f.size,
       fileMIMEType: f.type,
-      fileExtension: f.name.split(".").pop() as string,
+      fileExtension: f.name.includes(".") ? f.name.split(".").pop() : "",
       fileLastModified: f.lastModified,
     })),
   });
