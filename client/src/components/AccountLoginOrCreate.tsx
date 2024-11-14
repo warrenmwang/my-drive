@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { AxiosError } from "axios";
 import { z } from "zod";
 import {
@@ -9,11 +8,7 @@ import {
 } from "../hooks/auth";
 import "../shared-styles/button.css";
 
-// TODO: ensure that the login functionality works bc i swear when i try to use the same account i created in previous runs
-// it will act as if that account doesn't exist?
-
-const LoginPage: React.FC = function () {
-  const navigate = useNavigate();
+const AccountLoginOrCreate: React.FC = function () {
   const [requestInProgress, setRequestInProgress] = useState(false);
   const [isLoginForm, setIsLoginForm] = useState(true);
 
@@ -31,9 +26,6 @@ const LoginPage: React.FC = function () {
     loginAccountMutation.mutate(
       { email, password },
       {
-        onSuccess: () => {
-          navigate("/");
-        },
         onError: (error) => {
           if (error instanceof AxiosError) {
             const tmp = z.string().safeParse(error.response?.data.message);
@@ -56,9 +48,6 @@ const LoginPage: React.FC = function () {
     createAccountMutation.mutate(
       { email, password },
       {
-        onSuccess: () => {
-          navigate("/");
-        },
         onError: (error) => {
           if (error instanceof AxiosError) {
             const tmp = z.string().safeParse(error.response?.data.message);
@@ -75,11 +64,11 @@ const LoginPage: React.FC = function () {
     );
   };
 
-  useEffect(() => {
-    if (authQuery.status === "success" && authQuery.data) {
-      navigate("/account");
-    }
-  }, [authQuery.status]);
+  // useEffect(() => {
+  //   if (authQuery.status === "success" && authQuery.data) {
+  //     navigate("/account");
+  //   }
+  // }, [authQuery.status]);
 
   if (authQuery.isFetching) {
     return <p>Loading...</p>;
@@ -162,4 +151,4 @@ const LoginPage: React.FC = function () {
   );
 };
 
-export default LoginPage;
+export default AccountLoginOrCreate;

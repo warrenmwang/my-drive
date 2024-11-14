@@ -1,6 +1,4 @@
 import React, { useEffect } from "react";
-import { useGetIsAuthed } from "../hooks/auth";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { RETRIEVE_FILE_METADATA_LIST } from "../urls";
@@ -9,9 +7,6 @@ import { z } from "zod";
 import FileCard from "./FileCard";
 
 const Drive: React.FC = () => {
-  const navigate = useNavigate();
-  const authQuery = useGetIsAuthed();
-
   const myDriveQuery = useQuery({
     queryKey: ["drive", "list"],
     queryFn: async () => {
@@ -28,22 +23,12 @@ const Drive: React.FC = () => {
   });
 
   useEffect(() => {
-    if (authQuery.status === "success" && !authQuery.data) {
-      navigate("/login");
-    }
-  }, [authQuery.status]);
-
-  useEffect(() => {
     if (myDriveQuery.status === "success") {
       console.log(myDriveQuery.data);
     } else if (myDriveQuery.status === "error") {
       console.error(myDriveQuery.error);
     }
   }, [myDriveQuery.status]);
-
-  if (authQuery.status === "pending") {
-    return <p>Loading...</p>;
-  }
 
   return (
     <div className="flex flex-col items-center">

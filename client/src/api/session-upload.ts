@@ -12,14 +12,13 @@ import {
   UPLOAD_SINGLE_URL,
   UPLOAD_MULTIPART_CHUNK_URL,
 } from "../urls";
-import { randomUUID } from "crypto";
 
 export const startUploadSession = async (sessionID: string, files: File[]) => {
   const sessionMetaData = SessionMetaDataSchema.parse({
     id: sessionID,
     files: files.map((f) => ({
       sessionID: sessionID,
-      fileID: randomUUID(),
+      fileID: crypto.randomUUID(),
       fileName: f.name,
       fileSize: f.size,
       fileMIMEType: f.type,

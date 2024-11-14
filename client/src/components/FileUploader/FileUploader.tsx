@@ -11,7 +11,6 @@ import {
   apiUploadFileChunk,
 } from "../../api/session-upload";
 import { useQueryClient } from "@tanstack/react-query";
-import { randomUUID } from "crypto";
 
 const FileUploader: React.FC = () => {
   const queryClient = useQueryClient();
@@ -110,7 +109,7 @@ const FileUploader: React.FC = () => {
           }
 
           // start upload session
-          const sessionID = randomUUID();
+          const sessionID = crypto.randomUUID();
           const sessionMetaData = await startUploadSession(
             sessionID,
             inputFiles,
