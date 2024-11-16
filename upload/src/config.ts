@@ -3,6 +3,10 @@ import { z } from "zod";
 import { Chunk, FileMetaData, FileUploadProgress } from "./schema";
 dotenv.config();
 
+// TODO: the values that these three variables are holding should probably be synced with a database.
+// create a class that wraps these variables privately and expose functions to modify them
+// and everytime they are modified, they should be synced to a database.
+
 // key: sessionID, value: {[fileID: string]: FileMetaData}
 export const sessions = new Map<string, Map<string, FileMetaData>>();
 

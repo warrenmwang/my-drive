@@ -12,7 +12,6 @@ export const authenticateToken = (
   res: Response<any, AuthLocals>,
   next: NextFunction,
 ) => {
-  // Check existence of token in cookie
   const token = req.cookies.auth_token_DIT;
   if (!token) {
     return res
@@ -20,7 +19,6 @@ export const authenticateToken = (
       .json({ message: "Access denied. No token provided." });
   }
 
-  // Validate the JWT with server-kept secret
   try {
     res.locals.user = JWTPayloadSchema.parse(jwt.verify(token, JWT_SECRET));
     next();
@@ -29,20 +27,19 @@ export const authenticateToken = (
   }
 };
 
-// Similar to authenticateToken except will return with an OK status with a JSON body of false
+// Similar to authenticateToken except will return
+// with an OK status with a JSON body of false
 // to indicate failure.
 export const softAuthenticateToken = (
   req: Request,
   res: Response<any, AuthLocals>,
   next: NextFunction,
 ) => {
-  // Check existence of token in cookie
   const token = req.cookies.auth_token_DIT;
   if (!token) {
     return res.status(200).json(false);
   }
 
-  // Validate the JWT with server-kept secret
   try {
     res.locals.user = JWTPayloadSchema.parse(jwt.verify(token, JWT_SECRET));
     next();

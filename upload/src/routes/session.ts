@@ -8,8 +8,9 @@ import {
   UploadStatus,
 } from "../schema";
 
-import { z } from "zod";
+import { z, ZodError } from "zod";
 import { fileUploadProgress, sessions } from "../config";
+import { consoleLogError } from "../utils";
 
 const router = express.Router();
 
@@ -46,9 +47,10 @@ router.post(
       // Save in memory this session's metadata
       sessions.set(sessionMetaData.id, sessionFiles);
       res.status(200).send(sessionMetaData);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        res.status(400).json({ error: e.errors });
+    } catch (err) {
+      consoleLogError(err as Error | ZodError)
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ error: err.errors });
       } else {
         res.status(500).json({ error: "An unexpected error occurred" });
       }
@@ -95,9 +97,10 @@ router.post(
       sessions.delete(sessionID);
 
       res.status(200).json(session);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        res.status(400).json({ error: e.errors });
+    } catch (err) {
+      consoleLogError(err as Error | ZodError)
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ error: err.errors });
       } else {
         res.status(500).json({ error: "An unexpected error occurred" });
       }

@@ -23,3 +23,7 @@ export const MONGO_INITDB_DATABASE = z
   .string()
   .min(1)
   .parse(process.env.MONGO_INITDB_DATABASE);
+export const UPLOAD_SERVICE_ORIGIN = z
+  .string()
+  .min(1)
+  .parse(process.env.UPLOAD_SERVICE_ORIGIN);

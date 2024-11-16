@@ -52,3 +52,9 @@ export const FileMetaDataReceivedSchema = z.object({
   createdAt: z.string(),
 });
 export type FileMetaDataReceived = z.infer<typeof FileMetaDataReceivedSchema>;
+
+export const DeleteFileAPIResSchema = z.object({
+  message: z.string(),
+  fileID: z.string(),
+});
+export type DeleteFileAPIRes = z.infer<typeof DeleteFileAPIResSchema>;

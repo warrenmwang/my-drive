@@ -32,8 +32,6 @@ const Drive: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center">
-      <h1 className="font-mono text-3xl">My Drive</h1>
-      <p>Browse and download your previously uploaded documents here.</p>
       <div className="flex flex-wrap justify-center mt-3">
         {myDriveQuery.isSuccess && myDriveQuery.data?.length === 0 && (
           <p className="xl text-gray-400">

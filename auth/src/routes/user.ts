@@ -1,11 +1,10 @@
 import express, { Router, Request, Response } from "express";
-import {
-  authenticateToken,
-  MaybeAuthenticatedRequest,
-} from "../middleware/auth";
+import { authenticateToken, AuthLocals } from "../middleware/auth";
 import { JWTPayloadSchema, UserSchema } from "../schema";
 import { consoleLogError, createAndSetUserJWT, removeUserJWT } from "../utils";
-import { UserModelDB } from "../models/User";
+import { UserModel } from "../models/User";
+import { UPLOAD_SERVICE_ORIGIN } from "../config";
+import mongoose from "mongoose";
 
 const userRouter: Router = express.Router();
 
@@ -13,27 +12,25 @@ const userRouter: Router = express.Router();
 // Creates a user given email and password.
 userRouter.route("/").post(async (req: Request, res: Response) => {
   try {
-    // Parse user data for new account
     const data = UserSchema.omit({ id: true }).parse(req.body); // omit ID because don't let client generate id.
 
     // Query to ensure no account with same email already exists
-    const queryRes = await UserModelDB.find({ email: data.email }).exec();
+    const queryRes = await UserModel.find({ email: data.email }).exec();
     if (queryRes.length !== 0) {
-      return res
-        .status(400)
-        .json({ message: "An account with the entered email exists already." });
+      return res.status(400).json({
+        message:
+          "An account with the entered email exists already. Did you forget your password, well too bad! Use another email, lmao :P",
+      });
     }
 
-    // Create new user with details and save to db
     const userID: string = crypto.randomUUID();
-    const newUser = new UserModelDB({
+    const newUser = new UserModel({
       id: userID,
       email: data.email,
       password: data.password,
     });
     await newUser.save();
 
-    // Set JWT in cookie and return ok
     return createAndSetUserJWT(userID, res)
       .status(201)
       .json({ message: "Account created." });
@@ -48,10 +45,10 @@ userRouter.route("/").post(async (req: Request, res: Response) => {
 userRouter.get(
   "/",
   authenticateToken,
-  async (req: MaybeAuthenticatedRequest, res: Response) => {
+  async (_, res: Response<any, AuthLocals>) => {
     try {
-      const authPayload = JWTPayloadSchema.parse(req.user);
-      const queryRes = await UserModelDB.find({
+      const authPayload = JWTPayloadSchema.parse(res.locals.user);
+      const queryRes = await UserModel.find({
         id: authPayload.userID,
       }).exec();
 
@@ -82,20 +79,33 @@ userRouter.get(
 userRouter.delete(
   "/",
   authenticateToken,
-  async (req: MaybeAuthenticatedRequest, res: Response) => {
+  async (req, res: Response<any, AuthLocals>) => {
+    const userID = res.locals.user.userID;
+
     try {
-      const authPayload = JWTPayloadSchema.parse(req.user);
+      const deleteRes = await UserModel.deleteOne({ id: userID });
+      if (deleteRes.deletedCount === 0) throw new Error("User not found.");
 
-      // Delete their details from DB
-      await UserModelDB.deleteOne({ id: authPayload.userID });
+      const deleteFilesURL = `${UPLOAD_SERVICE_ORIGIN}/delete/all`;
+      const deleteFilesRes = await fetch(deleteFilesURL, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          Cookie: req.headers.cookie || "", // Forward the original cookies including httpOnly JWT
+          "Content-Type": "application/json",
+        },
+      });
+      if (!deleteFilesRes.ok) throw new Error("Failed to delete user files");
 
-      // Revoke their token
       return removeUserJWT(res)
         .status(200)
         .json({ message: "Account deleted successfully." });
     } catch (err) {
       consoleLogError(err);
-      return res.status(500).json(err);
+      return res.status(500).json({
+        message: `Failed to delete account. Error: ${err instanceof Error ? err.message : "Unknown error"}`,
+      });
+    } finally {
     }
   },
 );

@@ -4,6 +4,10 @@
 
 A top down copy of Google Drive's core feature -- personal file upload and retrieval.
 
+> [!CAUTION]
+> This is only a "fun" project to see how painful Microservices can get as a web noob, this is not intended to be a serious project.
+> It is for my personal exploration.
+
 Features
 - create an account with basic email and password, login, authenticated routes
 - bulk document upload form with validation

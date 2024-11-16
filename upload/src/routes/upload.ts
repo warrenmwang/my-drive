@@ -9,7 +9,7 @@ import {
   FileUploadProgressSchema,
   UploadStatus,
 } from "../schema";
-import { concatChunksOrderly } from "../utils";
+import { concatChunksOrderly, consoleLogError } from "../utils";
 import { z } from "zod";
 import { chunks, fileUploadProgress, sessions } from "../config";
 import File from "../mongodb/models/File";
@@ -57,9 +57,10 @@ router.post(
 
       // send back the metadata
       res.status(200).send(fileMetaData);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        res.status(400).json({ error: e.errors });
+    } catch (err) {
+      consoleLogError(err as Error | z.ZodError)
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ error: err.errors });
       } else {
         res.status(500).json({ error: "An unexpected error occurred" });
       }
@@ -152,9 +153,10 @@ multiPartRouter.post(
       }
 
       res.status(200).send(chunk);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        res.status(400).json({ error: e.errors });
+    } catch (err) {
+      consoleLogError(err as Error | z.ZodError)
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ error: err.errors });
       } else {
         res.status(500).json({ error: "An unexpected error occurred" });
       }

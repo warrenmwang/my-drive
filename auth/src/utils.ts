@@ -22,8 +22,6 @@ export function createAndSetUserJWT(
     secure: NODE_ENV === "production",
     maxAge: maxAge,
     path: "/",
-    // sameSite: "none",
-    // domain: CLIENT_ORIGIN,
   });
 }
 

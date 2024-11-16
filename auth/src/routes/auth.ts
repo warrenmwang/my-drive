@@ -1,14 +1,12 @@
 import express, { Router, Request, Response } from "express";
 import { UserSchema } from "../schema";
-import dotenv from "dotenv";
 import {
   authenticateToken,
   AuthLocals,
   softAuthenticateToken,
 } from "../middleware/auth";
 import { consoleLogError, createAndSetUserJWT, removeUserJWT } from "../utils";
-import { UserModelDB } from "../models/User";
-dotenv.config();
+import { UserModel } from "../models/User";
 
 const authRouter: Router = express.Router();
 
@@ -19,7 +17,7 @@ authRouter.post("/login", async (req: Request, res: Response) => {
     const userData = UserSchema.omit({ id: true }).parse(req.body);
 
     // Query DB for user's existence
-    const queryRes = await UserModelDB.findOne({
+    const queryRes = await UserModel.findOne({
       email: userData.email,
     }).exec();
 
@@ -31,6 +29,7 @@ authRouter.post("/login", async (req: Request, res: Response) => {
     }
 
     // Check password
+    // TODO: implement a way to count number of failed attempts to prevent spamming login attempts.
     if (queryRes.password !== userData.password) {
       return res
         .status(400)
@@ -58,7 +57,7 @@ authRouter.get(
 );
 
 // AUTHED
-// Log out a user by overwritting their JWT access token.
+// Logs the user out by overwriting the access JWT.
 authRouter.get("/logout", authenticateToken, (_, res: Response) => {
   return removeUserJWT(res)
     .status(200)
