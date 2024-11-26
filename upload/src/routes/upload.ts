@@ -14,23 +14,19 @@ import { z } from "zod";
 import { chunks, fileUploadProgress, sessions } from "../config";
 import File from "../mongodb/models/File";
 import { AuthLocals } from "../middleware/auth";
+import { BODY_PARSER_LIMIT } from "../constants";
 
 const router = express.Router();
 const multiPartRouter = express.Router();
 
 router.use(
-  bodyParser.raw({ type: "application/octet-stream", limit: "100mb" }),
+  bodyParser.raw({ type: "application/octet-stream", limit: BODY_PARSER_LIMIT }),
 );
 
-// TODO: allow editting of file name, that's it...
-router.post("/edit", (req, res) => {
-
-})
-
-// TODO: delete a file by its id
-router.delete("/", (req, res) => {
-
-})
+// // TODO: allow editting of file name, that's it...
+// router.post("/edit", (req, res) => {
+//
+// })
 
 router.post(
   "/single",
